@@ -4,6 +4,8 @@ import com.vijay.alumniportal.job.dto.JobRequest;
 import com.vijay.alumniportal.job.dto.JobResponse;
 import com.vijay.alumniportal.job.entity.Job;
 import com.vijay.alumniportal.job.repository.JobRepository;
+import com.vijay.alumniportal.student.entity.Student;
+import com.vijay.alumniportal.student.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,9 +14,12 @@ import java.util.List;
 public class JobService {
 
     private final JobRepository repository;
+    private final StudentRepository studentRepository;
 
-    public JobService(JobRepository repository) {
+    public JobService(JobRepository repository, StudentRepository studentRepository)
+    {
         this.repository = repository;
+        this.studentRepository = studentRepository;
     }
 
     public JobResponse createJob(JobRequest request) {
@@ -26,6 +31,7 @@ public class JobService {
                 .jobType(request.getJobType())
                 .skillsRequired(request.getSkillsRequired())
                 .postedBy(request.getPostedBy())
+                .appliedCount(0)
                 .build();
 
         Job savedJob = repository.save(job);
@@ -67,6 +73,25 @@ public class JobService {
                 .orElseThrow(() -> new RuntimeException("Job not found with id: " + id));
 
         repository.delete(job);
+    }
+
+    public JobResponse applyInternship(Long jobId, Long studentId) {
+        Job job = repository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job with id " + jobId + " does not exist"));
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student with id " + studentId + " does not exist"));
+
+        if (job.getStudentsApplied().contains(student)) {
+            throw new RuntimeException("Student already applied for this job");
+        }
+
+        job.getStudentsApplied().add(student);
+        job.setAppliedCount(job.getStudentsApplied().size());
+
+        Job updatedJob = repository.save(job);
+
+        return mapToResponse(updatedJob);
     }
 
     private JobResponse mapToResponse(Job job) {
