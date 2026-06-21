@@ -32,6 +32,11 @@ public class JobController {
         return service.getJobById(id);
     }
 
+    @PostMapping("/{jobId}/apply/{studentId}")
+    public JobResponse applyInternship(@PathVariable Long jobId, @PathVariable Long studentId) {
+        return service.applyInternship(jobId, studentId);
+    }
+
     @PutMapping("/{id}")
     public JobResponse updateJob(
             @PathVariable Long id,
