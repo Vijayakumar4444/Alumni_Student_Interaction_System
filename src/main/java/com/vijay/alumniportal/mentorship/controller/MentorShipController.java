@@ -10,40 +10,59 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/mentorships")
 public class MentorShipController {
-    private MentorShipService service;
 
-    public MentorShipController(MentorShipService service){
-        this.service=service;
+    private final MentorShipService service;
+
+    public MentorShipController(MentorShipService service) {
+        this.service = service;
     }
+
     @PostMapping
-    public MentorShipResponse createMentorship(@RequestBody MentorShipRequest request){
-        return this.service.createMentorship(request);
+    public MentorShipResponse createMentorship(@RequestBody MentorShipRequest request) {
+        return service.createMentorship(request);
     }
+
     @GetMapping
-    public List<MentorShipResponse> getAllMentorships(){
-        return this.service.getAllMentorships();
+    public List<MentorShipResponse> getAllMentorships() {
+        return service.getAllMentorships();
     }
+
     @GetMapping("/{id}")
-    public MentorShipResponse getMentorshipById(@PathVariable Long id){
-        return this.service.getMentorshipById(id);
+    public MentorShipResponse getMentorshipById(@PathVariable Long id) {
+        return service.getMentorshipById(id);
     }
+
     @GetMapping("/student/{studentId}")
     public List<MentorShipResponse> getMentorshipsByStudentId(@PathVariable Long studentId) {
         return service.getMentorshipsByStudentId(studentId);
     }
+
     @GetMapping("/alumni/{alumniId}")
     public List<MentorShipResponse> getMentorshipsByAlumniId(@PathVariable Long alumniId) {
         return service.getMentorshipsByAlumniId(alumniId);
     }
-    @PutMapping("/{id}")
-    public MentorShipResponse updateMentorshipStatus(@PathVariable Long id,@RequestBody String status){
-        return this.service.updateMentorshipStatus(id,status);
+
+    @PutMapping("/{id}/status")
+    public MentorShipResponse updateMentorshipStatus(
+            @PathVariable Long id,
+            @RequestBody String status
+    ) {
+        return service.updateMentorshipStatus(id, status);
     }
+
+    @PutMapping("/{id}/accept")
+    public MentorShipResponse acceptMentorship(@PathVariable Long id) {
+        return service.acceptMentorship(id);
+    }
+
+    @PutMapping("/{id}/reject")
+    public MentorShipResponse rejectMentorship(@PathVariable Long id) {
+        return service.rejectMentorship(id);
+    }
+
     @DeleteMapping("/{id}")
-    public String deleteMentorship(@PathVariable Long id){
-        this.service.deleteMentorship(id);
+    public String deleteMentorship(@PathVariable Long id) {
+        service.deleteMentorship(id);
         return "Mentorship deleted successfully";
     }
-
-
 }

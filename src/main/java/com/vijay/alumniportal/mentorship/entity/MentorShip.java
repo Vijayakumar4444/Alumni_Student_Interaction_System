@@ -1,10 +1,7 @@
 package com.vijay.alumniportal.mentorship.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import lombok.*;
-import jakarta.persistence.Id;
 
 @Getter
 @Setter
@@ -21,5 +18,12 @@ public class MentorShip {
     private Long studentId;
     private Long alumniId;
     private String message;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private MentorShipStatus status;
+
+    public enum MentorShipStatus {
+        PENDING,
+        ACCEPTED,
+        REJECTED
+    }
 }

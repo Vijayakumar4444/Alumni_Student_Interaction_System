@@ -9,4 +9,5 @@ public interface MentorShipRepository extends JpaRepository<MentorShip,Long> {
 
     List<MentorShip> findByStudentId(Long studentId);
     List<MentorShip> findByAlumniId(Long alumniId);
+    boolean existsByStudentIdAndStatus(Long studentId, MentorShip.MentorShipStatus status);
 }
