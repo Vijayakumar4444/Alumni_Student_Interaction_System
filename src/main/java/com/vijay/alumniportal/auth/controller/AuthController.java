@@ -7,6 +7,7 @@ import com.vijay.alumniportal.auth.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/auth")
 public class AuthController {
 

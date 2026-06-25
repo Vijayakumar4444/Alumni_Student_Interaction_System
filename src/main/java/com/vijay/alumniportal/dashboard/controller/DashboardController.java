@@ -6,6 +6,7 @@ import com.vijay.alumniportal.dashboard.service.DashboardService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
