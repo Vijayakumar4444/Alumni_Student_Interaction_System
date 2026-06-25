@@ -20,4 +20,5 @@ public class Student {
     private String department;
     private Integer year;
     private String skills;
+    private Boolean hasMentor = false;
 }
