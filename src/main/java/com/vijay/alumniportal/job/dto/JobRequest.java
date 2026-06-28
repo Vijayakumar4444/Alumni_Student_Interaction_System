@@ -7,11 +7,11 @@ import lombok.Setter;
 @Setter
 public class JobRequest {
 
+    private Long alumniId;
     private String title;
     private String company;
     private String description;
     private String location;
     private String jobType;
     private String skillsRequired;
-    private String postedBy;
 }

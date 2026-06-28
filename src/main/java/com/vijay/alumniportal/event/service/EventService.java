@@ -11,6 +11,11 @@ import com.vijay.alumniportal.student.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 import com.vijay.alumniportal.notification.entity.Notification;
 import com.vijay.alumniportal.notification.service.NotificationService;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -38,7 +43,30 @@ public class EventService {
         this.notificationService = notificationService;
     }
 
-    public EventResponse createEvent(EventRequest request) {
+    public EventResponse createEvent(EventRequest request, MultipartFile image) {
+
+        String imageUrl = null;
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+
+                Path uploadPath = Paths.get("uploads/events");
+
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                Path filePath = uploadPath.resolve(fileName);
+
+                Files.copy(image.getInputStream(), filePath);
+
+                imageUrl = "/uploads/events/" + fileName;
+
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload event image");
+            }
+        }
 
         alumniRepository.findById(request.getAlumniId())
                 .orElseThrow(() -> new RuntimeException("Alumni not found with id: " + request.getAlumniId()));
@@ -53,6 +81,7 @@ public class EventService {
                 .mode(request.getMode())
                 .venueOrLink(request.getVenueOrLink())
                 .requiredSkills(request.getRequiredSkills())
+                .imageUrl(imageUrl)
                 .maxSeats(request.getMaxSeats())
                 .registeredCount(0)
                 .status(Event.EventStatus.OPEN)
@@ -125,7 +154,8 @@ public class EventService {
             throw new RuntimeException("Event is closed. Registration not allowed.");
         }
 
-        boolean alreadyRegistered = registrationRepository.existsByEventIdAndStudentId(eventId, studentId);
+        boolean alreadyRegistered = registrationRepository
+                .existsByEventIdAndStudentId(eventId, studentId);
 
         if (alreadyRegistered) {
             throw new RuntimeException("Student already registered for this event");
@@ -143,20 +173,24 @@ public class EventService {
 
         if (event.getRegisteredCount() >= event.getMaxSeats()) {
             event.setStatus(Event.EventStatus.FULL);
+
+            notificationService.createNotification(
+                    event.getAlumniId(),
+                    Notification.UserRole.ALUMNI,
+                    "Event Full",
+                    "Your event '" + event.getTitle() + "' is now full."
+            );
+        } else {
+            event.setStatus(Event.EventStatus.OPEN);
         }
-        notificationService.createNotification(
-                event.getAlumniId(),
-                Notification.UserRole.ALUMNI,
-                "Event Full",
-                "Your event '" + event.getTitle() + "' is now full."
-        );
 
         eventRepository.save(event);
+
         notificationService.createNotification(
                 event.getAlumniId(),
                 Notification.UserRole.ALUMNI,
                 "New Event Registration",
-                "A student registered for your event: " + event.getTitle()
+                "A student (" + student.getName() + ") registered for your event: " + event.getTitle()
         );
 
         return new EventRegistrationResponse(
@@ -330,6 +364,7 @@ public class EventService {
                 event.getMode(),
                 event.getVenueOrLink(),
                 event.getRequiredSkills(),
+                event.getImageUrl(),
                 event.getMaxSeats(),
                 event.getRegisteredCount(),
                 availableSeats,

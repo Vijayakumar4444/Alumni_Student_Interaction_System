@@ -1,5 +1,6 @@
 package com.vijay.alumniportal.job.controller;
 
+import com.vijay.alumniportal.job.dto.JobApplicationResponse;
 import com.vijay.alumniportal.job.dto.JobRequest;
 import com.vijay.alumniportal.job.dto.JobResponse;
 import com.vijay.alumniportal.job.service.JobService;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/jobs")
 public class JobController {
 
@@ -32,9 +34,9 @@ public class JobController {
         return service.getJobById(id);
     }
 
-    @PostMapping("/{jobId}/apply/{studentId}")
-    public JobResponse applyInternship(@PathVariable Long jobId, @PathVariable Long studentId) {
-        return service.applyInternship(jobId, studentId);
+    @GetMapping("/alumni/{alumniId}")
+    public List<JobResponse> getJobsByAlumniId(@PathVariable Long alumniId) {
+        return service.getJobsByAlumniId(alumniId);
     }
 
     @PutMapping("/{id}")
@@ -49,5 +51,36 @@ public class JobController {
     public String deleteJob(@PathVariable Long id) {
         service.deleteJob(id);
         return "Job deleted successfully";
+    }
+
+    @PostMapping("/{jobId}/apply/{studentId}")
+    public JobApplicationResponse applyJob(
+            @PathVariable Long jobId,
+            @PathVariable Long studentId
+    ) {
+        return service.applyJob(jobId, studentId);
+    }
+
+    @GetMapping("/student/{studentId}/applications")
+    public List<JobApplicationResponse> getStudentApplications(@PathVariable Long studentId) {
+        return service.getStudentApplications(studentId);
+    }
+
+    @GetMapping("/{jobId}/applications")
+    public List<JobApplicationResponse> getJobApplications(@PathVariable Long jobId) {
+        return service.getJobApplications(jobId);
+    }
+
+    @PutMapping("/applications/{applicationId}/cancel")
+    public JobApplicationResponse cancelApplication(@PathVariable Long applicationId) {
+        return service.cancelApplication(applicationId);
+    }
+
+    @PutMapping("/applications/{applicationId}/status")
+    public JobApplicationResponse updateApplicationStatus(
+            @PathVariable Long applicationId,
+            @RequestParam String status
+    ) {
+        return service.updateApplicationStatus(applicationId, status);
     }
 }
