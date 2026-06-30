@@ -14,6 +14,13 @@ public class MentorShipResponse {
     private Long id;
     private Long studentId;
     private Long alumniId;
+
+    private String studentName;
+    private String studentEmail;
+    private String studentDepartment;
+    private Integer studentYear;
+    private String studentSkills;
+
     private String message;
     private String status;
 }

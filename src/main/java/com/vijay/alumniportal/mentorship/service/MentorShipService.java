@@ -4,24 +4,65 @@ import com.vijay.alumniportal.mentorship.dto.MentorShipRequest;
 import com.vijay.alumniportal.mentorship.dto.MentorShipResponse;
 import com.vijay.alumniportal.mentorship.entity.MentorShip;
 import com.vijay.alumniportal.mentorship.repository.MentorShipRepository;
-import org.springframework.stereotype.Service;
 import com.vijay.alumniportal.notification.entity.Notification;
 import com.vijay.alumniportal.notification.service.NotificationService;
+import com.vijay.alumniportal.student.entity.Student;
+import com.vijay.alumniportal.student.repository.StudentRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class MentorShipService {
 
-    private final MentorShipRepository repo;
+    private final MentorShipRepository mentorShipRepository;
     private final NotificationService notificationService;
+    private final StudentRepository studentRepository;
 
-    public MentorShipService(MentorShipRepository repo,NotificationService notificationService) {
-        this.repo = repo;
+    public MentorShipService(
+            MentorShipRepository mentorShipRepository,
+            NotificationService notificationService,
+            StudentRepository studentRepository
+    ) {
+        this.mentorShipRepository = mentorShipRepository;
         this.notificationService = notificationService;
+        this.studentRepository = studentRepository;
     }
 
-    public MentorShipResponse createMentorship(MentorShipRequest request) {
+    public MentorShipResponse createMentorship(
+            MentorShipRequest request
+    ) {
+        Student student = studentRepository
+                .findById(request.getStudentId())
+                .orElseThrow(() ->
+                        new RuntimeException("Student not found")
+                );
+
+        boolean alreadyHasMentor =
+                mentorShipRepository
+                        .existsByStudentIdAndStatus(
+                                request.getStudentId(),
+                                MentorShip.MentorShipStatus.ACCEPTED
+                        );
+
+        if (alreadyHasMentor) {
+            throw new RuntimeException(
+                    "You already have an accepted mentor"
+            );
+        }
+
+        boolean alreadyPending =
+                mentorShipRepository
+                        .existsByStudentIdAndStatus(
+                                request.getStudentId(),
+                                MentorShip.MentorShipStatus.PENDING
+                        );
+
+        if (alreadyPending) {
+            throw new RuntimeException(
+                    "You already have a pending mentorship request"
+            );
+        }
 
         MentorShip mentorShip = MentorShip.builder()
                 .studentId(request.getStudentId())
@@ -30,121 +71,220 @@ public class MentorShipService {
                 .status(MentorShip.MentorShipStatus.PENDING)
                 .build();
 
-        MentorShip savedMentorShip = repo.save(mentorShip);
+        MentorShip savedMentorship =
+                mentorShipRepository.save(mentorShip);
+
+        String notificationMessage =
+                "MENTORSHIP_REQUEST_ID:"
+                        + savedMentorship.getId()
+                        + "|STUDENT_ID:"
+                        + student.getId()
+                        + "|STUDENT_NAME:"
+                        + student.getName();
+
         notificationService.createNotification(
-                savedMentorShip.getAlumniId(),
+                savedMentorship.getAlumniId(),
                 Notification.UserRole.ALUMNI,
                 "New Mentorship Request",
-                "A student has sent you a mentorship request."
+                notificationMessage
         );
 
-        return mapToResponse(savedMentorShip);
+        return mapToResponse(savedMentorship);
     }
 
     public List<MentorShipResponse> getAllMentorships() {
-
-        return repo.findAll()
+        return mentorShipRepository
+                .findAll()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
     public MentorShipResponse getMentorshipById(Long id) {
-
-        MentorShip mentorShip = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mentorship with id : " + id + " does not exist"));
+        MentorShip mentorShip = mentorShipRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Mentorship not found with id: " + id
+                        )
+                );
 
         return mapToResponse(mentorShip);
     }
 
-    public MentorShipResponse updateMentorshipStatus(Long id, String status) {
+    public List<MentorShipResponse>
+    getMentorshipsByStudentId(Long studentId) {
 
-        MentorShip mentorShip = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mentorship with id : " + id + " does not exist"));
+        return mentorShipRepository
+                .findByStudentId(studentId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<MentorShipResponse>
+    getMentorshipsByAlumniId(Long alumniId) {
+
+        return mentorShipRepository
+                .findByAlumniId(alumniId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public MentorShipResponse updateMentorshipStatus(
+            Long id,
+            String status
+    ) {
+        MentorShip mentorShip = mentorShipRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Mentorship not found with id: " + id
+                        )
+                );
 
         MentorShip.MentorShipStatus newStatus =
-                MentorShip.MentorShipStatus.valueOf(status.toUpperCase());
+                MentorShip.MentorShipStatus.valueOf(
+                        status.toUpperCase()
+                );
 
         mentorShip.setStatus(newStatus);
 
-        MentorShip updatedMentorShip = repo.save(mentorShip);
+        MentorShip updatedMentorship =
+                mentorShipRepository.save(mentorShip);
 
-        return mapToResponse(updatedMentorShip);
+        return mapToResponse(updatedMentorship);
     }
 
     public MentorShipResponse acceptMentorship(Long id) {
+        MentorShip mentorShip = mentorShipRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Mentorship not found with id: " + id
+                        )
+                );
 
-        MentorShip mentorShip = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mentorship with id : " + id + " does not exist"));
+        if (mentorShip.getStatus()
+                != MentorShip.MentorShipStatus.PENDING) {
+            throw new RuntimeException(
+                    "Only pending requests can be accepted"
+            );
+        }
 
-        boolean alreadyHasMentor = repo.existsByStudentIdAndStatus(
-                mentorShip.getStudentId(),
+        boolean alreadyHasMentor =
+                mentorShipRepository
+                        .existsByStudentIdAndStatus(
+                                mentorShip.getStudentId(),
+                                MentorShip.MentorShipStatus.ACCEPTED
+                        );
+
+        if (alreadyHasMentor) {
+            throw new RuntimeException(
+                    "This student already has an accepted mentor"
+            );
+        }
+
+        mentorShip.setStatus(
                 MentorShip.MentorShipStatus.ACCEPTED
         );
 
-        if (alreadyHasMentor) {
-            throw new RuntimeException("This student already has an accepted mentor");
+        MentorShip updatedMentorship =
+                mentorShipRepository.save(mentorShip);
+
+        List<MentorShip> pendingRequests =
+                mentorShipRepository.findByStudentIdAndStatus(
+                        mentorShip.getStudentId(),
+                        MentorShip.MentorShipStatus.PENDING
+                );
+
+        for (MentorShip pendingRequest : pendingRequests) {
+            if (!pendingRequest.getId().equals(id)) {
+                pendingRequest.setStatus(
+                        MentorShip.MentorShipStatus.REJECTED
+                );
+            }
         }
 
-        mentorShip.setStatus(MentorShip.MentorShipStatus.ACCEPTED);
+        mentorShipRepository.saveAll(pendingRequests);
 
-        MentorShip updatedMentorShip = repo.save(mentorShip);
         notificationService.createNotification(
-                updatedMentorShip.getStudentId(),
+                updatedMentorship.getStudentId(),
                 Notification.UserRole.STUDENT,
                 "Mentorship Accepted",
-                "Your mentorship request has been accepted."
+                "Your mentorship request has been accepted"
         );
 
-        return mapToResponse(updatedMentorShip);
+        return mapToResponse(updatedMentorship);
     }
 
     public MentorShipResponse rejectMentorship(Long id) {
+        MentorShip mentorShip = mentorShipRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Mentorship not found with id: " + id
+                        )
+                );
 
-        MentorShip mentorShip = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mentorship with id : " + id + " does not exist"));
-
-        if (mentorShip.getStatus() == MentorShip.MentorShipStatus.ACCEPTED) {
-            throw new RuntimeException("Accepted mentorship cannot be rejected");
+        if (mentorShip.getStatus()
+                == MentorShip.MentorShipStatus.ACCEPTED) {
+            throw new RuntimeException(
+                    "An accepted mentorship cannot be rejected"
+            );
         }
 
-        mentorShip.setStatus(MentorShip.MentorShipStatus.REJECTED);
+        mentorShip.setStatus(
+                MentorShip.MentorShipStatus.REJECTED
+        );
 
-        MentorShip updatedMentorShip = repo.save(mentorShip);
+        MentorShip updatedMentorship =
+                mentorShipRepository.save(mentorShip);
 
-        return mapToResponse(updatedMentorShip);
+        notificationService.createNotification(
+                updatedMentorship.getStudentId(),
+                Notification.UserRole.STUDENT,
+                "Mentorship Rejected",
+                "Your mentorship request was rejected"
+        );
+
+        return mapToResponse(updatedMentorship);
     }
 
     public void deleteMentorship(Long id) {
+        MentorShip mentorShip = mentorShipRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Mentorship not found with id: " + id
+                        )
+                );
 
-        MentorShip mentorShip = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mentorship with id : " + id + " does not exist"));
-
-        repo.delete(mentorShip);
+        mentorShipRepository.delete(mentorShip);
     }
 
-    public List<MentorShipResponse> getMentorshipsByStudentId(Long studentId) {
-
-        return repo.findByStudentId(studentId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public List<MentorShipResponse> getMentorshipsByAlumniId(Long alumniId) {
-
-        return repo.findByAlumniId(alumniId)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    private MentorShipResponse mapToResponse(MentorShip mentorShip) {
+    private MentorShipResponse mapToResponse(
+            MentorShip mentorShip
+    ) {
+        Student student = studentRepository
+                .findById(mentorShip.getStudentId())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Student not found with id: "
+                                        + mentorShip.getStudentId()
+                        )
+                );
 
         return new MentorShipResponse(
                 mentorShip.getId(),
                 mentorShip.getStudentId(),
                 mentorShip.getAlumniId(),
+                student.getName(),
+                student.getEmail(),
+                student.getDepartment(),
+                student.getYear(),
+                student.getSkills(),
                 mentorShip.getMessage(),
                 mentorShip.getStatus().name()
         );
