@@ -14,4 +14,8 @@ public class AnswerResponse {
     private Long alumniId;
 
     private String answer;
+
+    private Integer helpfulCount;
+
+    private String alumniName;
 }

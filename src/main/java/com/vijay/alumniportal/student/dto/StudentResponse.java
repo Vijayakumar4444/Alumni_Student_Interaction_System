@@ -13,4 +13,5 @@ public class StudentResponse {
     private String department;
     private Integer year;
     private String skills;
+    private String profileImage;
 }
