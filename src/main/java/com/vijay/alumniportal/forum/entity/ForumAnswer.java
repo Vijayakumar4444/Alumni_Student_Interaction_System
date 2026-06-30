@@ -21,4 +21,5 @@ public class ForumAnswer {
 
     @Column(length = 3000)
     private String answer;
+    private Integer helpfulCount;
 }

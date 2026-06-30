@@ -22,7 +22,7 @@ public class EventResponse {
     private String venueOrLink;
 
     private String requiredSkills;
-
+    private String imageUrl;
     private Integer maxSeats;
     private Integer registeredCount;
     private Integer availableSeats;

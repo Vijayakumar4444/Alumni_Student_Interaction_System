@@ -5,6 +5,13 @@ import com.vijay.alumniportal.alumni.dto.AlumniResponse;
 import com.vijay.alumniportal.alumni.entity.Alumni;
 import com.vijay.alumniportal.alumni.repository.AlumniRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import java.util.List;
 
@@ -77,7 +84,33 @@ public class AlumniService {
                 alumni.getCompany(),
                 alumni.getDesignation(),
                 alumni.getExperience(),
-                alumni.getSkills()
+                alumni.getSkills(),
+                alumni.getProfileImage()
         );
+    }
+    public AlumniResponse uploadProfileImage(Long id, MultipartFile image) {
+        try {
+            Alumni alumni = repository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Alumni not found with id: " + id));
+
+            String folderPath = "uploads/profile-images/";
+            File folder = new File(folderPath);
+
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
+
+            String fileName = "alumni_" + id + "_" + System.currentTimeMillis() + "_" + image.getOriginalFilename();
+            Path filePath = Paths.get(folderPath + fileName);
+
+            Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            alumni.setProfileImage("/uploads/profile-images/" + fileName);
+
+            return mapToResponse(repository.save(alumni));
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload profile image");
+        }
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/forum")
 public class ForumController {
 
@@ -74,5 +75,21 @@ public class ForumController {
             @PathVariable Long alumniId
     ) {
         return service.likeQuestionByAlumni(questionId, alumniId);
+    }
+
+    @PostMapping("/answers/{answerId}/helpful/student/{studentId}")
+    public LikeResponse markHelpfulByStudent(
+            @PathVariable Long answerId,
+            @PathVariable Long studentId
+    ) {
+        return service.markAnswerHelpfulByStudent(answerId, studentId);
+    }
+
+    @PostMapping("/answers/{answerId}/helpful/alumni/{alumniId}")
+    public LikeResponse markHelpfulByAlumni(
+            @PathVariable Long answerId,
+            @PathVariable Long alumniId
+    ) {
+        return service.markAnswerHelpfulByAlumni(answerId, alumniId);
     }
 }

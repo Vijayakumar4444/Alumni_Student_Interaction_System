@@ -107,7 +107,7 @@ public class DashboardService {
 
         int mentorshipRequestsReceivedCount = mentorShipRepository.findByAlumniId(alumniId).size();
 
-        int postedJobsCount = jobRepository.findByPostedBy(alumni.getName()).size();
+        int postedJobsCount = jobRepository.findByAlumniId(alumniId).size();
 
         return new AlumniDashboardResponse(
                 alumni.getId(),

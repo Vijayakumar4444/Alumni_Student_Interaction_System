@@ -14,4 +14,5 @@ public class AlumniResponse {
     private String designation;
     private Integer experience;
     private String skills;
+    private String profileImage;
 }

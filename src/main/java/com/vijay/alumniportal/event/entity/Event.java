@@ -23,7 +23,7 @@ public class Event {
 
     private String eventDate;
     private String eventTime;
-
+    private String imageUrl;
     private String mode;
     private String venueOrLink;
 

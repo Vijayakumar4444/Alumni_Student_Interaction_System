@@ -4,6 +4,7 @@ import com.vijay.alumniportal.student.dto.StudentRequest;
 import com.vijay.alumniportal.student.dto.StudentResponse;
 import com.vijay.alumniportal.student.service.StudentService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -45,5 +46,13 @@ public class StudentController {
     public String deleteStudent(@PathVariable Long id) {
         service.deleteStudent(id);
         return "Student deleted successfully";
+    }
+
+    @PostMapping("/{id}/profile-image")
+    public StudentResponse uploadProfileImage(
+            @PathVariable Long id,
+            @RequestParam("image") MultipartFile image
+    ) {
+        return service.uploadProfileImage(id, image);
     }
 }

@@ -19,4 +19,6 @@ public class QuestionResponse {
     private Integer likeCount;
 
     private ForumQuestion.QuestionStatus status;
+
+    private String studentName;
 }

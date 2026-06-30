@@ -3,10 +3,14 @@ package com.vijay.alumniportal.event.controller;
 import com.vijay.alumniportal.event.dto.*;
 import com.vijay.alumniportal.event.service.EventService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 
+
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/events")
 public class EventController {
 
@@ -16,9 +20,12 @@ public class EventController {
         this.service = service;
     }
 
-    @PostMapping
-    public EventResponse createEvent(@RequestBody EventRequest request) {
-        return service.createEvent(request);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public EventResponse createEvent(
+            @RequestPart("event") EventRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        return service.createEvent(request, image);
     }
 
     @GetMapping

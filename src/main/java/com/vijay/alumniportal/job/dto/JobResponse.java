@@ -8,11 +8,12 @@ import lombok.Getter;
 public class JobResponse {
 
     private Long id;
+    private Long alumniId;
     private String title;
     private String company;
     private String description;
     private String location;
     private String jobType;
     private String skillsRequired;
-    private String postedBy;
+    private Integer appliedCount;
 }
