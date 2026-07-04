@@ -14,4 +14,7 @@ public class StudentResponse {
     private Integer year;
     private String skills;
     private String profileImage;
+    private String resumePdf;
+    private String githubLink;
+    private String linkedinLink;
 }

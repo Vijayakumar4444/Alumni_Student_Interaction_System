@@ -12,4 +12,6 @@ public class StudentRequest {
     private String department;
     private Integer year;
     private String skills;
+    private String githubLink;
+    private String linkedinLink;
 }
