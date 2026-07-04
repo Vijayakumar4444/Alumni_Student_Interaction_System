@@ -10,6 +10,10 @@ import com.vijay.alumniportal.auth.repository.UserRepository;
 import com.vijay.alumniportal.student.entity.Student;
 import com.vijay.alumniportal.student.repository.StudentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import com.vijay.alumniportal.security.JwtService;
 
 @Service
 public class AuthService {
@@ -17,15 +21,24 @@ public class AuthService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final AlumniRepository alumniRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     public AuthService(
             UserRepository userRepository,
             StudentRepository studentRepository,
-            AlumniRepository alumniRepository
+            AlumniRepository alumniRepository,
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            JwtService jwtService
     ) {
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
         this.alumniRepository = alumniRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
     public AuthResponse signup(SignupRequest request) {
@@ -73,7 +86,7 @@ public class AuthService {
                 .profileId(profileId)
                 .name(request.getName())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .role(role)
                 .build();
 
@@ -84,12 +97,17 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
 
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
-        }
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("Invalid email or password")
+                );
 
         return mapToResponse(user);
     }
@@ -103,6 +121,7 @@ public class AuthService {
         } else {
             redirectTo = "/alumni/dashboard";
         }
+        String token = jwtService.generateToken(user);
 
         return new AuthResponse(
                 user.getId(),
@@ -110,7 +129,9 @@ public class AuthService {
                 user.getName(),
                 user.getEmail(),
                 user.getRole().name(),
-                redirectTo
+                redirectTo,
+                token,
+                "Bearer"
         );
     }
 }
