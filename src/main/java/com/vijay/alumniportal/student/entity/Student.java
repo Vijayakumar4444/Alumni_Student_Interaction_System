@@ -14,11 +14,14 @@ public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    private String profileImage;
     private String name;
     private String email;
     private String department;
     private Integer year;
     private String skills;
     private Boolean hasMentor = false;
+    private String resumePdf;
+    private String githubLink;
+    private String linkedinLink;
 }
