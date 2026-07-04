@@ -21,4 +21,7 @@ public class Student {
     private Integer year;
     private String skills;
     private Boolean hasMentor = false;
+    private String resumePdf;
+    private String githubLink;
+    private String linkedinLink;
 }

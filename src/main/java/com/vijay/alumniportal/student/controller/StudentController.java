@@ -55,4 +55,12 @@ public class StudentController {
     ) {
         return service.uploadProfileImage(id, image);
     }
+
+    @PostMapping("/{id}/resume")
+    public StudentResponse uploadResume(
+            @PathVariable Long id,
+            @RequestParam("resume") MultipartFile resume
+    ) {
+        return service.uploadResume(id, resume);
+    }
 }
