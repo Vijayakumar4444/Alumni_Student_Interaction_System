@@ -26,4 +26,8 @@ public interface MentorShipRepository extends JpaRepository<MentorShip,Long> {
             Long studentId,
             MentorShip.MentorShipStatus status
     );
+    List<MentorShip> findByAlumniIdAndStatus(
+            Long alumniId,
+            MentorShip.MentorShipStatus status
+    );
 }
