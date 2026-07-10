@@ -9,7 +9,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://alumni-student-interaction-system-f.vercel.app"
+})
 @RequestMapping("/api/students")
 public class StudentController {
 

@@ -6,7 +6,10 @@ import com.vijay.alumniportal.dashboard.service.DashboardService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://alumni-student-interaction-system-f.vercel.app"
+})
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
