@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://alumni-student-interaction-system-f.vercel.app"
+})
 @RequestMapping("/api/notifications")
 public class NotificationController {
 

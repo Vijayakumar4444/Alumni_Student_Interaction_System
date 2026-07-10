@@ -10,7 +10,7 @@ import com.vijay.alumniportal.message.dto.ConversationSummaryResponse;
 
 @RestController
 @RequestMapping("/api/messages")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173","https://alumni-student-interaction-system-f.vercel.app"})
 public class PrivateMessageRestController {
 
     private final PrivateMessageService messageService;

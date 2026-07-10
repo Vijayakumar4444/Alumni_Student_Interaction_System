@@ -7,7 +7,10 @@ import com.vijay.alumniportal.auth.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://alumni-student-interaction-system-f.vercel.app"
+})
 @RequestMapping("/api/auth")
 public class AuthController {
 
